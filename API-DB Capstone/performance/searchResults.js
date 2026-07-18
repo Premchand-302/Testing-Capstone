@@ -6,12 +6,8 @@ export const options = {
     iterations: 100,
 
     thresholds: {
-        http_req_duration: [
-            "p(95)<1000"
-        ],
-        http_req_failed: [
-            "rate<0.01"
-        ]
+        http_req_duration: ["p(95)<1000"],
+        http_req_failed: ["rate<0.01"]
     }
 };
 
@@ -36,35 +32,31 @@ export function setup() {
         "Login Successful": (r) => r.status === 200
     });
 
-    return {
-        token: loginResponse.json("token")
-    };
+    const token = loginResponse.json("token");
+
+    return { token };
 }
 
 export default function (data) {
 
     const headers = {
-        Authorization: `Bearer ${data.token}`,
-        "Content-Type": "application/json"
+        Authorization: `Bearer ${data.token}`
     };
 
-    const payload = JSON.stringify({
-        from: "PUN",
-        to: "DEL",
-        date: "2026-08-10",
-        passengers: 1,
-        cabin: "economy"
-    });
+    const url =
+        `${__ENV.BASE_URL}/api/flights` +
+        `?from=PUN` +
+        `&to=DEL` +
+        `&date=2026-08-10` +
+        `&pax=1` +
+        `&class=economy`;
 
-    const response = http.post(
-        `${__ENV.BASE_URL}/api/flights/search`,
-        payload,
-        {
-            headers
-        }
-    );
+    const response = http.get(url, { headers });
+
+    console.log(`Status: ${response.status}`);
 
     check(response, {
-        "Status 200": (r) => r.status === 200
+        "Status 200": (r) => r.status === 200,
+        "Flights Returned": (r) => r.json("count") > 0
     });
 }

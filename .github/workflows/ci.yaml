@@ -1,0 +1,88 @@
+name: TripStack Capstone CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+
+  api-db-tests:
+
+    name: API + DB Tests
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: API-DB Capstone
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 22
+          cache: maven
+
+      - name: Run API + DB Tests
+        env:
+          TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
+          TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
+        run: mvn clean test
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: API-DB Capstone/allure-results
+
+  ui-tests:
+
+    name: Playwright UI Tests
+
+    needs: api-db-tests
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Playwright
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Install Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright Tests
+        env:
+          TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
+          TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
+        run: npx playwright test
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: Playwright/playwright-report

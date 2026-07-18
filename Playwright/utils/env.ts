@@ -4,8 +4,8 @@ dotenv.config();
 
 export const config = {
   baseUrl: process.env.BASE_URL|| "",
-  email: process.env.USER_EMAIL || "",
-  password: process.env.PASSWORD || "",
+  email: process.env.TRIPSTACK_EMAIL || "",
+  password: process.env.TRIPSTACK_PASSWORD || "",
   headless: process.env.HEADLESS === "false",
   cardName: process.env.CARD_NAME || "",
   cardNo: process.env.CARD_NO || "",

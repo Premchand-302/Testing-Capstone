@@ -2,29 +2,27 @@ name: TripStack Capstone CI
 
 on:
   push:
-    branches:
-      - main
-      - master
-
+    branches: [main]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main]
 
 jobs:
-
   api-db-tests:
-
     name: API + DB Tests
-
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: API-DB Capstone
 
-    steps:
+    env:
+      baseUrl: https://api.tripstack.doomple.com/
+      apiUrl: https://api.tripstack.doomple.com/
 
+      TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
+      TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
+
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -35,10 +33,7 @@ jobs:
           java-version: 22
           cache: maven
 
-      - name: Run API + DB Tests
-        env:
-          TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
-          TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
+      - name: Run Maven Tests
         run: mvn clean test
 
       - name: Upload Allure Results
@@ -49,35 +44,36 @@ jobs:
           path: API-DB Capstone/allure-results
 
   ui-tests:
-
     name: Playwright UI Tests
-
-    needs: api-db-tests
-
     runs-on: ubuntu-latest
+    needs: api-db-tests
 
     defaults:
       run:
         working-directory: Playwright
 
+    env:
+      baseUrl: https://api.tripstack.doomple.com/
+
+      TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
+      TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
+
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Install Dependencies
         run: npm ci
 
-      - name: Install Browsers
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
       - name: Run Playwright Tests
-        env:
-          TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
-          TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
         run: npx playwright test
 
       - name: Upload Playwright Report

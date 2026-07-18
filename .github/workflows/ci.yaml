@@ -60,7 +60,7 @@ jobs:
         working-directory: Playwright
 
     env:
-      baseUrl: https://api.tripstack.doomple.com/
+      BASE_URL: https://api.tripstack.doomple.com/
 
       TRIPSTACK_EMAIL: ${{ secrets.TRIPSTACK_EMAIL }}
       TRIPSTACK_PASSWORD: ${{ secrets.TRIPSTACK_PASSWORD }}
